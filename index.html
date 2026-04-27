@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mi Login con Supabase</title>
+    <style>
+        body { font-family: Arial; padding: 50px; }
+        .caja { 
+            border: 2px solid #ddd; 
+            padding: 20px; 
+            max-width: 300px; 
+            margin: auto;
+            border-radius: 10px;
+        }
+        input, button { 
+            display: block; 
+            width: 90%; 
+            margin: 10px 0; 
+            padding: 8px;
+        }
+        button { background: green; color: white; cursor: pointer; }
+        .error { color: red; }
+        .exito { color: green; }
+    </style>
+</head>
+<body>
+
+<div class="caja">
+    <h2>📝 Registrarse</h2>
+    <input type="email" id="regEmail" placeholder="Correo electrónico">
+    <input type="password" id="regPass" placeholder="Contraseña (mínimo 6 letras)">
+    <button onclick="registrar()">Crear usuario</button>
+
+    <h2>🔐 Iniciar Sesión</h2>
+    <input type="email" id="loginEmail" placeholder="Correo electrónico">
+    <input type="password" id="loginPass" placeholder="Contraseña">
+    <button onclick="iniciarSesion()">Entrar</button>
+
+    <button onclick="consultarUsuario()" style="background: blue;">👤 Consultar mi usuario</button>
+    
+    <div id="mensaje"></div>
+</div>
+
+<!-- Cargar la librería de Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+    // 🔑 Pon AQUÍ tus llaves de Supabase
+    const SUPABASE_URL = "https://yeemzdjccdhhwgqhylkw.supabase.co";     // <-- Cámbialo
+    const SUPABASE_KEY = "tsb_publishable_I3BGwQddq7om9hu7T86kcg_yIiZiAc7";                 // <-- Cámbialo
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    function mostrarMensaje(texto, esError = false) {
+        const div = document.getElementById('mensaje');
+        div.innerHTML = texto;
+        div.className = esError ? 'error' : 'exito';
+        setTimeout(() => div.innerHTML = '', 3000);
+    }
+
+    // 📝 Registrar usuario
+    async function registrar() {
+        const email = document.getElementById('regEmail').value;
+        const password = document.getElementById('regPass').value;
+        
+        if(!email || !password) {
+            mostrarMensaje("❌ Escribe correo y contraseña", true);
+            return;
+        }
+        
+        const { data, error } = await supabase.auth.signUp({
+            email: email,
+            password: password
+        });
+        
+        if(error) {
+            mostrarMensaje("❌ Error: " + error.message, true);
+        } else {
+            mostrarMensaje("✅ Usuario creado. Revisa tu correo (si no ves el correo, prueba con otro email)");
+        }
+    }
+
+    // 🔐 Iniciar sesión
+    async function iniciarSesion() {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPass').value;
+        
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+        
+        if(error) {
+            mostrarMensaje("❌ Error: " + error.message, true);
+        } else {
+            mostrarMensaje("✅ ¡Bienvenido/a " + data.user.email + "!");
+            // Guardamos que el usuario está logueado
+            localStorage.setItem("usuario", data.user.email);
+        }
+    }
+
+    // 👤 Consultar usuario actual
+    async function consultarUsuario() {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if(error || !user) {
+            mostrarMensaje("❌ No hay usuario logueado. Inicia sesión primero", true);
+        } else {
+            mostrarMensaje("👤 Usuario: " + user.email + "\n📅 Creado: " + user.created_at);
+        }
+    }
+    
+    // Si ya había sesión guardada, mostramos mensaje al cargar
+    window.onload = function() {
+        const usuarioGuardado = localStorage.getItem("usuario");
+        if(usuarioGuardado) {
+            mostrarMensaje("👋 Hola de nuevo, " + usuarioGuardado);
+        }
+    }
+</script>
+</body>
+</html>
