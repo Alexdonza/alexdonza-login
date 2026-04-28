@@ -320,21 +320,34 @@
     border-radius: 28px;
     text-align: center;
     font-size: 13px;
+    font-weight: 500;
     display: none;
     backdrop-filter: blur(8px);
+    animation: slideDown 0.3s ease;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .message.error {
-    background: rgba(255, 100, 100, 0.15);
-    color: #ffaaaa;
-    border: 1px solid rgba(255, 100, 100, 0.3);
+    background: rgba(255, 80, 80, 0.2);
+    color: #ff8888;
+    border: 1px solid rgba(255, 80, 80, 0.4);
     display: block;
   }
 
   .message.success {
-    background: rgba(100, 255, 100, 0.15);
-    color: #aaffaa;
-    border: 1px solid rgba(100, 255, 100, 0.3);
+    background: rgba(80, 255, 80, 0.2);
+    color: #88ff88;
+    border: 1px solid rgba(80, 255, 80, 0.4);
     display: block;
   }
 
@@ -515,11 +528,24 @@ function showMessage(text, type) {
   const msgDiv = document.getElementById('message');
   msgDiv.textContent = text;
   msgDiv.className = `message ${type}`;
-  setTimeout(() => {
-    msgDiv.style.display = 'none';
-    msgDiv.className = 'message';
-  }, 4000);
   msgDiv.style.display = 'block';
+  
+  // Auto ocultar después de 4 segundos
+  setTimeout(() => {
+    if (msgDiv.style.display === 'block') {
+      msgDiv.style.opacity = '0';
+      setTimeout(() => {
+        msgDiv.style.display = 'none';
+        msgDiv.style.opacity = '1';
+      }, 300);
+    }
+  }, 4000);
+}
+
+function hideMessage() {
+  const msgDiv = document.getElementById('message');
+  msgDiv.style.display = 'none';
+  msgDiv.className = 'message';
 }
 
 function switchTab(tab) {
@@ -540,7 +566,7 @@ function switchTab(tab) {
     tabRegister.classList.add('active');
   }
   
-  document.getElementById('message').style.display = 'none';
+  hideMessage();
 }
 
 // ========== LOGIN ==========
@@ -548,8 +574,14 @@ async function login() {
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
   
-  if (!email || !password) {
-    showMessage('❌ Completa todos los campos', 'error');
+  // Validaciones
+  if (!email) {
+    showMessage('❌ Por favor, ingresa tu correo electrónico', 'error');
+    return;
+  }
+  
+  if (!password) {
+    showMessage('❌ Por favor, ingresa tu contraseña', 'error');
     return;
   }
   
@@ -559,27 +591,42 @@ async function login() {
   btn.innerHTML = '<span class="loader"></span> Ingresando...';
   
   try {
+    // Buscar usuario por correo y contraseña
     const { data, error } = await supabase
       .from('usuarios')
       .select('*')
       .eq('correo', email)
       .eq('contrasena', password);
     
-    if (error) throw error;
-    
-    if (!data || data.length === 0) {
-      showMessage('❌ Correo o contraseña incorrectos', 'error');
-    } else {
-      currentUser = data[0];
-      sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
-      showWelcomeScreen();
-      showMessage('✅ Bienvenido de vuelta', 'success');
-      
-      document.getElementById('loginEmail').value = '';
-      document.getElementById('loginPassword').value = '';
+    if (error) {
+      console.error('Error de Supabase:', error);
+      showMessage('❌ Error de conexión con el servidor', 'error');
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+      return;
     }
+    
+    // Verificar si encontró el usuario
+    if (!data || data.length === 0) {
+      showMessage('❌ Usuario o contraseña incorrectos', 'error');
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+      return;
+    }
+    
+    // Login exitoso
+    currentUser = data[0];
+    sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+    showWelcomeScreen();
+    showMessage('✅ ¡Bienvenido de vuelta!', 'success');
+    
+    // Limpiar campos
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
+    
   } catch (error) {
-    showMessage('❌ Error: ' + error.message, 'error');
+    console.error('Error:', error);
+    showMessage('❌ Error al iniciar sesión: ' + error.message, 'error');
   }
   
   btn.disabled = false;
@@ -594,8 +641,24 @@ async function register() {
   const password = document.getElementById('regPassword').value;
   const password2 = document.getElementById('regPassword2').value;
   
-  if (!name || !phone || !email || !password || !password2) {
-    showMessage('❌ Completa todos los campos', 'error');
+  // Validaciones
+  if (!name) {
+    showMessage('❌ Por favor, ingresa tu nombre completo', 'error');
+    return;
+  }
+  
+  if (!phone) {
+    showMessage('❌ Por favor, ingresa tu número de teléfono', 'error');
+    return;
+  }
+  
+  if (!email) {
+    showMessage('❌ Por favor, ingresa tu correo electrónico', 'error');
+    return;
+  }
+  
+  if (!password) {
+    showMessage('❌ Por favor, ingresa una contraseña', 'error');
     return;
   }
   
@@ -609,25 +672,42 @@ async function register() {
     return;
   }
   
+  // Validar formato de email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    showMessage('❌ Por favor, ingresa un correo electrónico válido', 'error');
+    return;
+  }
+  
   const btn = document.getElementById('registerBtn');
   const originalText = btn.textContent;
   btn.disabled = true;
   btn.innerHTML = '<span class="loader"></span> Registrando...';
   
   try {
-    const { data: existing } = await supabase
+    // Verificar si el correo ya existe
+    const { data: existing, error: checkError } = await supabase
       .from('usuarios')
       .select('correo')
       .eq('correo', email);
     
-    if (existing && existing.length > 0) {
-      showMessage('❌ Este correo ya está registrado', 'error');
+    if (checkError) {
+      console.error('Error al verificar:', checkError);
+      showMessage('❌ Error al verificar el correo', 'error');
       btn.disabled = false;
       btn.innerHTML = originalText;
       return;
     }
     
-    const { error } = await supabase
+    if (existing && existing.length > 0) {
+      showMessage('❌ Este correo electrónico ya está registrado', 'error');
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+      return;
+    }
+    
+    // Crear nuevo usuario
+    const { data, error } = await supabase
       .from('usuarios')
       .insert([{
         nombre: name,
@@ -635,22 +715,38 @@ async function register() {
         correo: email,
         contrasena: password,
         created_at: new Date().toISOString()
-      }]);
+      }])
+      .select();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error al insertar:', error);
+      showMessage('❌ Error al crear la cuenta: ' + error.message, 'error');
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+      return;
+    }
     
-    showMessage('✅ Cuenta creada exitosamente', 'success');
+    // Registro exitoso
+    showMessage('✅ ¡Cuenta creada exitosamente! Ahora puedes iniciar sesión', 'success');
     
+    // Limpiar campos
     document.getElementById('regName').value = '';
     document.getElementById('regPhone').value = '';
     document.getElementById('regEmail').value = '';
     document.getElementById('regPassword').value = '';
     document.getElementById('regPassword2').value = '';
     
-    setTimeout(() => switchTab('login'), 2000);
+    // Cambiar a login después de 2 segundos
+    setTimeout(() => {
+      switchTab('login');
+      // Pre-llenar el correo para facilitar el login
+      document.getElementById('loginEmail').value = email;
+      document.getElementById('loginPassword').focus();
+    }, 2000);
     
   } catch (error) {
-    showMessage('❌ Error: ' + error.message, 'error');
+    console.error('Error:', error);
+    showMessage('❌ Error al registrar: ' + error.message, 'error');
   }
   
   btn.disabled = false;
@@ -681,37 +777,56 @@ function logout() {
   document.getElementById('authCard').style.display = 'block';
   document.getElementById('welcomeCard').style.display = 'none';
   switchTab('login');
-  showMessage('👋 Sesión cerrada', 'info');
+  showMessage('👋 Has cerrado sesión correctamente', 'info');
 }
 
 // ========== VERIFICAR TABLA ==========
 async function checkTable() {
   try {
-    const { error } = await supabase.from('usuarios').select('id', { count: 'exact', head: true });
+    const { data, error } = await supabase.from('usuarios').select('id', { count: 'exact', head: true });
     if (error && error.message.includes('does not exist')) {
-      console.log('La tabla "usuarios" no existe');
+      console.warn('La tabla "usuarios" no existe. Ejecuta el SQL en Supabase');
+      showMessage('⚠️ Configuración pendiente: Crea la tabla "usuarios" en Supabase', 'info');
+    } else {
+      console.log('✅ Tabla "usuarios" encontrada');
     }
   } catch(e) {
-    console.log('Error verificando tabla');
+    console.error('Error verificando tabla:', e);
   }
 }
 
 // ========== EVENTOS ==========
 document.addEventListener('DOMContentLoaded', () => {
+  // Asignar eventos
   document.getElementById('tabLoginBtn').addEventListener('click', () => switchTab('login'));
   document.getElementById('tabRegisterBtn').addEventListener('click', () => switchTab('register'));
   document.getElementById('loginBtn').addEventListener('click', login);
   document.getElementById('registerBtn').addEventListener('click', register);
   document.getElementById('logoutBtn').addEventListener('click', logout);
   
+  // Permitir Enter en los campos
+  document.getElementById('loginPassword').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') login();
+  });
+  document.getElementById('loginEmail').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') login();
+  });
+  document.getElementById('regPassword2').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') register();
+  });
+  
+  // Verificar sesión guardada
   const savedUser = sessionStorage.getItem('currentUser');
   if (savedUser) {
     try {
       currentUser = JSON.parse(savedUser);
       showWelcomeScreen();
-    } catch(e) {}
+    } catch(e) {
+      console.error('Error al recuperar sesión');
+    }
   }
   
+  // Verificar tabla
   checkTable();
 });
 </script>
