@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>Login App | Supabase</title>
+<title>Liquid Glass | Login B&W</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   * {
@@ -13,29 +13,388 @@
   }
 
   body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #000000;
     display: flex;
     justify-content: center;
     align-items: center;
+    font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, sans-serif;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Fondo con ondas líquidas */
+  .liquid-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .liquid-bg::before {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    background: radial-gradient(circle at 30% 40%, rgba(50,50,50,0.8) 0%, rgba(0,0,0,1) 100%);
+    animation: liquidMove 12s ease-in-out infinite alternate;
+  }
+
+  .liquid-bg::after {
+    content: '';
+    position: absolute;
+    width: 150%;
+    height: 150%;
+    top: -25%;
+    left: -25%;
+    background: repeating-linear-gradient(45deg, 
+      rgba(255,255,255,0.03) 0px, 
+      rgba(255,255,255,0.03) 2px,
+      transparent 2px,
+      transparent 8px);
+    animation: liquidSlide 8s ease-in-out infinite alternate;
+  }
+
+  @keyframes liquidMove {
+    0% {
+      transform: scale(1) rotate(0deg);
+      filter: blur(0px);
+    }
+    100% {
+      transform: scale(1.2) rotate(5deg);
+      filter: blur(2px);
+    }
+  }
+
+  @keyframes liquidSlide {
+    0% {
+      transform: translate(-5%, -5%) rotate(0deg);
+    }
+    100% {
+      transform: translate(5%, 5%) rotate(2deg);
+    }
+  }
+
+  /* Ondas SVG animadas */
+  .waves {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30%;
+    z-index: 0;
+    opacity: 0.3;
+  }
+
+  .waves svg {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Contenedor principal */
+  .container {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 480px;
     padding: 20px;
   }
 
-  .container {
+  /* Efecto Liquid Glass */
+  .glass-card {
+    background: rgba(10, 10, 10, 0.65);
+    backdrop-filter: blur(12px);
+    border-radius: 48px;
+    padding: 45px 35px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 
+      0 20px 40px rgba(0, 0, 0, 0.5),
+      inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: glassFloat 4s ease-in-out infinite;
+  }
+
+  .glass-card:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+  }
+
+  @keyframes glassFloat {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
+  /* Logo y título */
+  .logo {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .logo-icon {
+    font-size: 70px;
+    filter: drop-shadow(0 0 20px rgba(255,255,255,0.3));
+    animation: iconPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes iconPulse {
+    0%, 100% {
+      transform: scale(1);
+      filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));
+    }
+    50% {
+      transform: scale(1.05);
+      filter: drop-shadow(0 0 25px rgba(255,255,255,0.6));
+    }
+  }
+
+  h1 {
+    color: #ffffff;
+    text-align: center;
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    margin-top: 10px;
+    background: linear-gradient(135deg, #fff 0%, #aaa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+    margin-top: 8px;
+    font-weight: 400;
+  }
+
+  /* Pestañas */
+  .tabs {
+    display: flex;
+    gap: 12px;
+    margin: 30px 0 25px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 5px;
+    border-radius: 60px;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    font-family: inherit;
+  }
+
+  .tab.active {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Grupos de formulario */
+  .form-group {
+    margin-bottom: 22px;
+    position: relative;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  .form-group input {
     width: 100%;
-    max-width: 450px;
+    padding: 14px 18px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    border-radius: 28px;
+    color: #ffffff;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    outline: none;
+    font-family: inherit;
   }
 
-  .card {
-    background: white;
-    border-radius: 20px;
-    padding: 40px 30px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    animation: fadeIn 0.5s ease;
+  .form-group input:focus {
+    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
   }
 
-  @keyframes fadeIn {
+  .form-group input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Botón principal */
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #ffffff 0%, #aaaaaa 100%);
+    border: none;
+    border-radius: 40px;
+    color: #000000;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    font-family: inherit;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn-primary:hover::before {
+    left: 100%;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(255,255,255,0.2);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Botón logout */
+  .btn-logout {
+    width: 100%;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    border-radius: 40px;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+    font-family: inherit;
+  }
+
+  .btn-logout:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
+  /* Mensajes */
+  .message {
+    margin-top: 20px;
+    padding: 12px 16px;
+    border-radius: 28px;
+    text-align: center;
+    font-size: 13px;
+    display: none;
+    backdrop-filter: blur(8px);
+  }
+
+  .message.error {
+    background: rgba(255, 100, 100, 0.15);
+    color: #ffaaaa;
+    border: 1px solid rgba(255, 100, 100, 0.3);
+    display: block;
+  }
+
+  .message.success {
+    background: rgba(100, 255, 100, 0.15);
+    color: #aaffaa;
+    border: 1px solid rgba(100, 255, 100, 0.3);
+    display: block;
+  }
+
+  .message.info {
+    background: rgba(255, 255, 255, 0.1);
+    color: #cccccc;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: block;
+  }
+
+  /* Pantalla de bienvenida */
+  .welcome-content {
+    text-align: center;
+  }
+
+  .welcome-icon {
+    font-size: 80px;
+    margin: 20px 0;
+    filter: drop-shadow(0 0 15px rgba(255,255,255,0.3));
+  }
+
+  .user-card {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 20px;
+    border-radius: 28px;
+    margin: 25px 0;
+    text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .user-card p {
+    margin: 12px 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+  }
+
+  .user-card strong {
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  /* Loader */
+  .loader {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(0,0,0,0.3);
+    border-radius: 50%;
+    border-top-color: #000;
+    animation: spin 0.6s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Animación de entrada */
+  @keyframes fadeSlideIn {
     from {
       opacity: 0;
       transform: translateY(20px);
@@ -46,244 +405,102 @@
     }
   }
 
-  h1 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 10px;
-    font-size: 28px;
-  }
-
-  .subtitle {
-    text-align: center;
-    color: #666;
-    margin-bottom: 30px;
-    font-size: 14px;
-  }
-
-  .tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 30px;
-  }
-
-  .tab {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    background: #f0f0f0;
-    cursor: pointer;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: 600;
-    transition: all 0.3s;
-  }
-
-  .tab.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-  }
-
-  .form-group {
-    margin-bottom: 20px;
-  }
-
-  label {
-    display: block;
-    margin-bottom: 8px;
-    color: #333;
-    font-weight: 500;
-    font-size: 14px;
-  }
-
-  input {
-    width: 100%;
-    padding: 12px 15px;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    font-size: 14px;
-    transition: all 0.3s;
-    outline: none;
-  }
-
-  input:focus {
-    border-color: #667eea;
-  }
-
-  .btn {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: transform 0.2s;
-  }
-
-  .btn:hover {
-    transform: translateY(-2px);
-  }
-
-  .btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  .message {
-    margin-top: 20px;
-    padding: 12px;
-    border-radius: 10px;
-    text-align: center;
-    font-size: 14px;
-    display: none;
-  }
-
-  .message.error {
-    background: #fee;
-    color: #c33;
-    display: block;
-  }
-
-  .message.success {
-    background: #efe;
-    color: #3c3;
-    display: block;
-  }
-
-  .message.info {
-    background: #e3f2fd;
-    color: #1976d2;
-    display: block;
-  }
-
-  .welcome-card {
-    text-align: center;
-  }
-
-  .emoji {
-    font-size: 80px;
-    margin: 20px 0;
-  }
-
-  .user-info {
-    background: #f5f5f5;
-    padding: 15px;
-    border-radius: 10px;
-    margin: 20px 0;
-    text-align: left;
-  }
-
-  .user-info p {
-    margin: 8px 0;
-    color: #333;
-  }
-
-  .logout-btn {
-    background: #dc3545;
-    margin-top: 20px;
-  }
-
-  .logout-btn:hover {
-    background: #c82333;
-  }
-
-  .loader {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-radius: 50%;
-    border-top-color: white;
-    animation: spin 0.6s linear infinite;
-    margin-right: 8px;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  button {
-    font-family: inherit;
+  .glass-card {
+    animation: fadeSlideIn 0.6s ease-out;
   }
 </style>
 </head>
 <body>
 
+<div class="liquid-bg"></div>
+<div class="waves">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+    <path fill="rgba(255,255,255,0.05)" fill-opacity="1" d="M0,192L48,197.3C96,203,192,213,288,208C384,203,480,181,576,181.3C672,181,768,203,864,208C960,213,1056,203,1152,186.7C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z">
+      <animate attributeName="d" dur="8s" repeatCount="indefinite" values="
+        M0,192L48,197.3C96,203,192,213,288,208C384,203,480,181,576,181.3C672,181,768,203,864,208C960,213,1056,203,1152,186.7C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;
+        M0,128L48,138.7C96,149,192,171,288,176C384,181,480,171,576,176C672,181,768,203,864,197.3C960,192,1056,160,1152,154.7C1248,149,1344,171,1392,181.3L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;
+        M0,192L48,197.3C96,203,192,213,288,208C384,203,480,181,576,181.3C672,181,768,203,864,208C960,213,1056,203,1152,186.7C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z
+      " />
+    </path>
+  </svg>
+</div>
+
 <div class="container">
   <!-- Pantalla de Login/Registro -->
-  <div id="authCard" class="card">
-    <h1>✨ Bienvenido</h1>
-    <p class="subtitle">Gestiona tus finanzas personales</p>
-
-    <div class="tabs">
-      <button class="tab active" id="tabLoginBtn">Iniciar Sesión</button>
-      <button class="tab" id="tabRegisterBtn">Registrarse</button>
+  <div id="authCard" class="glass-card">
+    <div class="logo">
+      <div class="logo-icon">⚫</div>
+      <h1>MONOCHROME</h1>
+      <p class="subtitle">Liquid Glass Experience</p>
     </div>
 
-    <!-- Formulario de Login -->
+    <div class="tabs">
+      <button class="tab active" id="tabLoginBtn">LOGIN</button>
+      <button class="tab" id="tabRegisterBtn">REGISTER</button>
+    </div>
+
+    <!-- Formulario Login -->
     <div id="loginForm">
       <div class="form-group">
-        <label>📧 Correo Electrónico</label>
+        <label>CORREO ELECTRÓNICO</label>
         <input type="email" id="loginEmail" placeholder="tu@email.com">
       </div>
       <div class="form-group">
-        <label>🔒 Contraseña</label>
-        <input type="password" id="loginPassword" placeholder="******">
+        <label>CONTRASEÑA</label>
+        <input type="password" id="loginPassword" placeholder="••••••••">
       </div>
-      <button class="btn" id="loginBtn">Ingresar</button>
+      <button class="btn-primary" id="loginBtn">INGRESAR</button>
     </div>
 
-    <!-- Formulario de Registro -->
+    <!-- Formulario Registro -->
     <div id="registerForm" style="display:none">
       <div class="form-group">
-        <label>👤 Nombre Completo</label>
+        <label>NOMBRE COMPLETO</label>
         <input type="text" id="regName" placeholder="Tu nombre">
       </div>
       <div class="form-group">
-        <label>📱 Teléfono</label>
+        <label>TELÉFONO</label>
         <input type="tel" id="regPhone" placeholder="+1 809 000 0000">
       </div>
       <div class="form-group">
-        <label>📧 Correo Electrónico</label>
+        <label>CORREO ELECTRÓNICO</label>
         <input type="email" id="regEmail" placeholder="tu@email.com">
       </div>
       <div class="form-group">
-        <label>🔒 Contraseña</label>
+        <label>CONTRASEÑA</label>
         <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres">
       </div>
       <div class="form-group">
-        <label>🔒 Confirmar Contraseña</label>
-        <input type="password" id="regPassword2" placeholder="Repite la contraseña">
+        <label>CONFIRMAR CONTRASEÑA</label>
+        <input type="password" id="regPassword2" placeholder="Repite tu contraseña">
       </div>
-      <button class="btn" id="registerBtn">Crear Cuenta</button>
+      <button class="btn-primary" id="registerBtn">CREAR CUENTA</button>
     </div>
 
     <div id="message" class="message"></div>
   </div>
 
   <!-- Pantalla de Bienvenida -->
-  <div id="welcomeCard" class="card" style="display:none">
-    <div class="welcome-card">
-      <div class="emoji" id="welcomeEmoji">🎉</div>
-      <h2 id="welcomeName">¡Hola!</h2>
-      <p class="subtitle">Bienvenido a tu dashboard financiero</p>
+  <div id="welcomeCard" class="glass-card" style="display:none">
+    <div class="welcome-content">
+      <div class="logo-icon" id="welcomeIcon">◈</div>
+      <h2 id="welcomeName">¡Bienvenido!</h2>
+      <p class="subtitle">Tu espacio personal</p>
       
-      <div class="user-info">
-        <p><strong>📧 Correo:</strong> <span id="userEmail"></span></p>
-        <p><strong>📱 Teléfono:</strong> <span id="userPhone"></span></p>
-        <p><strong>📅 Registrado:</strong> <span id="userDate"></span></p>
+      <div class="user-card">
+        <p><strong>👤 Nombre:</strong> <span id="userName"></span></p>
+        <p><strong>📧 Correo:</strong> <span id="userEmailDisplay"></span></p>
+        <p><strong>📱 Teléfono:</strong> <span id="userPhoneDisplay"></span></p>
+        <p><strong>📅 Registro:</strong> <span id="userDateDisplay"></span></p>
       </div>
       
-      <button class="btn logout-btn" id="logoutBtn">🚪 Cerrar Sesión</button>
+      <button class="btn-logout" id="logoutBtn">CERRAR SESIÓN</button>
     </div>
   </div>
 </div>
 
 <script>
-// Configuración de Supabase
+// ========== CONFIGURACIÓN SUPABASE ==========
 const SUPABASE_URL = 'https://jwrmekidkgeuaqfcqffq.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_aBsiZbHs0N2GAuaje5B-FQ_mWDGdULj';
 
@@ -292,7 +509,8 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser = null;
 
-// Mostrar mensajes
+// ========== FUNCIONES ==========
+
 function showMessage(text, type) {
   const msgDiv = document.getElementById('message');
   msgDiv.textContent = text;
@@ -304,7 +522,6 @@ function showMessage(text, type) {
   msgDiv.style.display = 'block';
 }
 
-// Cambiar entre pestañas
 function switchTab(tab) {
   const loginForm = document.getElementById('loginForm');
   const registerForm = document.getElementById('registerForm');
@@ -323,25 +540,23 @@ function switchTab(tab) {
     tabRegister.classList.add('active');
   }
   
-  const msgDiv = document.getElementById('message');
-  msgDiv.style.display = 'none';
-  msgDiv.className = 'message';
+  document.getElementById('message').style.display = 'none';
 }
 
-// Función de Login
+// ========== LOGIN ==========
 async function login() {
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
   
   if (!email || !password) {
-    showMessage('❌ Por favor, completa todos los campos', 'error');
+    showMessage('❌ Completa todos los campos', 'error');
     return;
   }
   
   const btn = document.getElementById('loginBtn');
   const originalText = btn.textContent;
   btn.disabled = true;
-  btn.innerHTML = '<span class="loader"></span> Validando...';
+  btn.innerHTML = '<span class="loader"></span> Ingresando...';
   
   try {
     const { data, error } = await supabase
@@ -358,9 +573,8 @@ async function login() {
       currentUser = data[0];
       sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
       showWelcomeScreen();
-      showMessage('✅ ¡Bienvenido de vuelta!', 'success');
+      showMessage('✅ Bienvenido de vuelta', 'success');
       
-      // Limpiar campos
       document.getElementById('loginEmail').value = '';
       document.getElementById('loginPassword').value = '';
     }
@@ -372,7 +586,7 @@ async function login() {
   btn.innerHTML = originalText;
 }
 
-// Función de Registro
+// ========== REGISTRO ==========
 async function register() {
   const name = document.getElementById('regName').value.trim();
   const phone = document.getElementById('regPhone').value.trim();
@@ -381,7 +595,7 @@ async function register() {
   const password2 = document.getElementById('regPassword2').value;
   
   if (!name || !phone || !email || !password || !password2) {
-    showMessage('❌ Por favor, completa todos los campos', 'error');
+    showMessage('❌ Completa todos los campos', 'error');
     return;
   }
   
@@ -401,7 +615,6 @@ async function register() {
   btn.innerHTML = '<span class="loader"></span> Registrando...';
   
   try {
-    // Verificar si el correo ya existe
     const { data: existing } = await supabase
       .from('usuarios')
       .select('correo')
@@ -414,8 +627,7 @@ async function register() {
       return;
     }
     
-    // Crear nuevo usuario
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('usuarios')
       .insert([{
         nombre: name,
@@ -423,21 +635,18 @@ async function register() {
         correo: email,
         contrasena: password,
         created_at: new Date().toISOString()
-      }])
-      .select();
+      }]);
     
     if (error) throw error;
     
-    showMessage('✅ ¡Cuenta creada exitosamente! Ahora inicia sesión', 'success');
+    showMessage('✅ Cuenta creada exitosamente', 'success');
     
-    // Limpiar campos
     document.getElementById('regName').value = '';
     document.getElementById('regPhone').value = '';
     document.getElementById('regEmail').value = '';
     document.getElementById('regPassword').value = '';
     document.getElementById('regPassword2').value = '';
     
-    // Cambiar a login
     setTimeout(() => switchTab('login'), 2000);
     
   } catch (error) {
@@ -448,71 +657,62 @@ async function register() {
   btn.innerHTML = originalText;
 }
 
-// Mostrar pantalla de bienvenida
+// ========== BIENVENIDA ==========
 function showWelcomeScreen() {
   document.getElementById('authCard').style.display = 'none';
   document.getElementById('welcomeCard').style.display = 'block';
   
   document.getElementById('welcomeName').textContent = `¡Hola ${currentUser.nombre}!`;
-  document.getElementById('userEmail').textContent = currentUser.correo;
-  document.getElementById('userPhone').textContent = currentUser.telefono || 'No especificado';
+  document.getElementById('userName').textContent = currentUser.nombre;
+  document.getElementById('userEmailDisplay').textContent = currentUser.correo;
+  document.getElementById('userPhoneDisplay').textContent = currentUser.telefono || 'No especificado';
   
-  // Formatear fecha
   const date = currentUser.created_at ? new Date(currentUser.created_at) : new Date();
-  document.getElementById('userDate').textContent = date.toLocaleDateString('es-ES');
+  document.getElementById('userDateDisplay').textContent = date.toLocaleDateString('es-ES');
   
-  // Emoji aleatorio de bienvenida
-  const emojis = ['🎉', '🎊', '✨', '🌟', '💫', '⭐', '🦄', '🌈'];
-  document.getElementById('welcomeEmoji').textContent = emojis[Math.floor(Math.random() * emojis.length)];
+  const icons = ['◈', '◇', '○', '●', '◆', '⬤'];
+  document.getElementById('welcomeIcon').textContent = icons[Math.floor(Math.random() * icons.length)];
 }
 
-// Cerrar sesión
+// ========== LOGOUT ==========
 function logout() {
   currentUser = null;
   sessionStorage.removeItem('currentUser');
   document.getElementById('authCard').style.display = 'block';
   document.getElementById('welcomeCard').style.display = 'none';
   switchTab('login');
-  showMessage('👋 Has cerrado sesión', 'info');
+  showMessage('👋 Sesión cerrada', 'info');
 }
 
-// Verificar y notificar sobre la tabla
-async function checkAndNotifyTable() {
+// ========== VERIFICAR TABLA ==========
+async function checkTable() {
   try {
     const { error } = await supabase.from('usuarios').select('id', { count: 'exact', head: true });
     if (error && error.message.includes('does not exist')) {
-      console.log('La tabla "usuarios" no existe. Ejecuta el SQL en Supabase');
-      showMessage('ℹ️ Configuración necesaria: Ejecuta el SQL en Supabase para crear la tabla "usuarios"', 'info');
+      console.log('La tabla "usuarios" no existe');
     }
   } catch(e) {
     console.log('Error verificando tabla');
   }
 }
 
-// Asignar eventos cuando el DOM esté listo
+// ========== EVENTOS ==========
 document.addEventListener('DOMContentLoaded', () => {
-  // Botones de tabs
   document.getElementById('tabLoginBtn').addEventListener('click', () => switchTab('login'));
   document.getElementById('tabRegisterBtn').addEventListener('click', () => switchTab('register'));
-  
-  // Botones de acciones
   document.getElementById('loginBtn').addEventListener('click', login);
   document.getElementById('registerBtn').addEventListener('click', register);
   document.getElementById('logoutBtn').addEventListener('click', logout);
   
-  // Verificar sesión guardada
   const savedUser = sessionStorage.getItem('currentUser');
   if (savedUser) {
     try {
       currentUser = JSON.parse(savedUser);
       showWelcomeScreen();
-    } catch(e) {
-      console.log('Error al recuperar sesión');
-    }
+    } catch(e) {}
   }
   
-  // Verificar tabla
-  checkAndNotifyTable();
+  checkTable();
 });
 </script>
 </body>
