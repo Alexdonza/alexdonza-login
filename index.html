@@ -3,229 +3,282 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>Login App 🦄 | Con Supabase</title>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<title>Login App | Supabase</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  *{margin:0;padding:0;box-sizing:border-box;}
-  html,body{width:100%;height:100%;overflow:hidden;}
-  body{font-family:'Nunito',sans-serif;min-height:100vh;background:#0f0c29;}
-
-  .loader-bar{
-    position:fixed;top:0;left:0;height:4px;z-index:9999;
-    background:linear-gradient(90deg,#f72585,#7209b7,#4cc9f0);
-    border-radius:0 4px 4px 0;box-shadow:0 0 10px #f72585;
-    width:0;transition:width 0.3s;
-  }
-  .loader-bar.active{animation:loadBar 1.4s ease-in-out infinite;}
-  @keyframes loadBar{
-    0%{left:0;width:0;}40%{left:0;width:60%;}100%{left:100%;width:0;}
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
 
-  .bg{position:fixed;inset:0;background:linear-gradient(135deg,#0f0c29 0%,#302b63 50%,#24243e 100%);}
-  .blob{position:fixed;border-radius:50%;filter:blur(80px);opacity:0.35;animation:blobMove 8s ease-in-out infinite alternate;}
-  .blob1{width:400px;height:400px;background:#f72585;top:-100px;left:-100px;animation-duration:9s;}
-  .blob2{width:350px;height:350px;background:#7209b7;bottom:-80px;right:-80px;animation-duration:11s;}
-  .blob3{width:300px;height:300px;background:#4cc9f0;top:40%;left:40%;animation-duration:7s;}
-  @keyframes blobMove{0%{transform:translate(0,0) scale(1);}100%{transform:translate(40px,30px) scale(1.15);}}
-
-  .page{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:10;}
-  .page.active{display:flex;animation:fadeIn 0.5s ease;}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:none;}}
-
-  .card{
-    background:rgba(255,255,255,0.07);
-    backdrop-filter:blur(20px);
-    border:1.5px solid rgba(255,255,255,0.15);
-    border-radius:24px;
-    padding:40px 36px;
-    width:440px;max-width:95vw;max-height:95vh;overflow-y:auto;
-    color:#fff;
-    box-shadow:0 25px 60px rgba(0,0,0,0.5);
-    animation:cardIn 0.6s cubic-bezier(.34,1.56,.64,1);
-    scrollbar-width:none;
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
   }
-  .card::-webkit-scrollbar{display:none;}
-  @keyframes cardIn{from{opacity:0;transform:translateY(40px) scale(0.92);}to{opacity:1;transform:none;}}
 
-  .logo{text-align:center;margin-bottom:16px;}
-  .logo span{font-family:'Baloo 2',cursive;font-size:48px;display:inline-block;animation:bounce 2s ease-in-out infinite;cursor:pointer;}
-  @keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
-
-  h1{font-family:'Baloo 2',cursive;font-size:26px;font-weight:800;text-align:center;margin-bottom:4px;
-    background:linear-gradient(90deg,#f72585,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-  .subtitle{text-align:center;color:rgba(255,255,255,0.5);font-size:13px;margin-bottom:20px;}
-
-  .tabs{display:flex;background:rgba(255,255,255,0.08);border-radius:12px;margin-bottom:20px;padding:4px;gap:4px;}
-  .tab{flex:1;padding:9px;text-align:center;border-radius:9px;cursor:pointer;font-size:14px;font-weight:700;
-    color:rgba(255,255,255,0.5);transition:all 0.3s;border:none;background:transparent;}
-  .tab.active{background:linear-gradient(135deg,#f72585,#7209b7);color:#fff;
-    box-shadow:0 4px 15px rgba(247,37,133,0.4);transform:scale(1.02);}
-  .tab:not(.active):hover{color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.05);}
-
-  .field{margin-bottom:14px;position:relative;}
-  .field label{font-size:11px;color:rgba(255,255,255,0.6);display:block;margin-bottom:5px;font-weight:700;letter-spacing:0.5px;}
-  .field input{
-    width:100%;padding:11px 44px 11px 14px;
-    background:rgba(255,255,255,0.08);
-    border:1.5px solid rgba(255,255,255,0.15);
-    border-radius:12px;color:#fff;font-family:'Nunito',sans-serif;font-size:14px;
-    transition:all 0.3s;outline:none;
+  .container {
+    width: 100%;
+    max-width: 450px;
   }
-  .field input::placeholder{color:rgba(255,255,255,0.3);}
-  .field input:focus{border-color:#f72585;background:rgba(247,37,133,0.1);box-shadow:0 0 0 3px rgba(247,37,133,0.15);}
-  .icon{position:absolute;right:12px;bottom:10px;font-size:16px;cursor:pointer;user-select:none;transition:transform 0.2s;}
-  .icon:hover{transform:scale(1.3);}
 
-  .strength-wrap{margin-top:5px;height:4px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden;}
-  .strength-bar{height:100%;width:0;border-radius:4px;transition:all 0.4s;}
-
-  .btn{
-    width:100%;padding:13px;border:none;border-radius:14px;
-    font-family:'Baloo 2',cursive;font-size:16px;font-weight:700;
-    cursor:pointer;position:relative;overflow:hidden;
-    background:linear-gradient(135deg,#f72585 0%,#7209b7 100%);
-    color:#fff;letter-spacing:0.5px;transition:all 0.3s;margin-top:6px;
-    box-shadow:0 8px 25px rgba(247,37,133,0.4);
+  .card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px 30px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: fadeIn 0.5s ease;
   }
-  .btn:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(247,37,133,0.5);}
-  .btn:active{transform:scale(0.98);}
-  .btn:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
 
-  .msg{font-size:13px;margin-top:12px;padding:10px 14px;border-radius:10px;display:none;text-align:center;}
-  .msg.error{background:rgba(247,37,133,0.15);color:#ff8fab;border:1px solid rgba(247,37,133,0.3);display:block;}
-  .msg.success{background:rgba(76,201,240,0.15);color:#90e0ef;border:1px solid rgba(76,201,240,0.3);display:block;}
-  .msg.info{background:rgba(255,255,255,0.1);color:#ccc;border:1px solid rgba(255,255,255,0.2);display:block;}
-
-  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;}
-  @media(max-width:480px){.two-col{grid-template-columns:1fr;}}
-
-  #welcomePage{flex-direction:column;text-align:center;padding:20px;}
-  .greeting{color:rgba(255,255,255,0.7);font-size:20px;margin-bottom:10px;font-weight:600;}
-
-  .animal-display{
-    font-size:clamp(48px,10vw,80px);
-    min-height:100px;display:flex;align-items:center;justify-content:center;
-    font-family:'Baloo 2',cursive;font-weight:800;
-    color:#fff;animation:animalPop 0.5s cubic-bezier(.34,1.56,.64,1);
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
-  @keyframes animalPop{from{transform:scale(0) rotate(-15deg);opacity:0;}to{transform:scale(1);opacity:1;}}
 
-  .welcome-word{
-    display:flex;flex-wrap:wrap;justify-content:center;
-    font-family:'Baloo 2',cursive;font-size:clamp(36px,8vw,70px);font-weight:800;
-    background:linear-gradient(90deg,#f72585,#7209b7,#4cc9f0,#06d6a0);
-    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-    margin:10px 0;cursor:pointer;
+  h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 28px;
   }
-  .wletter{
-    display:inline-block;
-    animation:floatL 3s ease-in-out infinite;
-    transition:all 0.3s cubic-bezier(.34,1.56,.64,1);
-    cursor:pointer;
-  }
-  .wletter:hover{transform:scale(1.4) rotate(10deg)!important;}
-  @keyframes floatL{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
 
-  .hint{color:rgba(255,255,255,0.4);font-size:13px;margin-bottom:16px;}
-
-  .exit-btn{
-    margin-top:16px;padding:14px 50px;
-    border:2px solid rgba(255,255,255,0.3);
-    background:rgba(255,255,255,0.05);color:#fff;border-radius:50px;
-    font-family:'Baloo 2',cursive;font-size:18px;font-weight:700;
-    cursor:pointer;transition:all 0.3s;letter-spacing:1px;
-    backdrop-filter:blur(10px);
+  .subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 14px;
   }
-  .exit-btn:hover{background:rgba(247,37,133,0.2);border-color:#f72585;transform:scale(1.06);
-    box-shadow:0 0 30px rgba(247,37,133,0.4);}
 
-  .p-dot{
-    position:fixed;width:8px;height:8px;border-radius:50%;pointer-events:none;
-    animation:pFly var(--dur) ease forwards;z-index:999;
+  .tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
   }
-  @keyframes pFly{0%{opacity:1;transform:translate(0,0) scale(1);}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0);}}
+
+  .tab {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: #f0f0f0;
+    cursor: pointer;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s;
+  }
+
+  .tab.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+  input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.3s;
+    outline: none;
+  }
+
+  input:focus {
+    border-color: #667eea;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .message {
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 14px;
+    display: none;
+  }
+
+  .message.error {
+    background: #fee;
+    color: #c33;
+    display: block;
+  }
+
+  .message.success {
+    background: #efe;
+    color: #3c3;
+    display: block;
+  }
+
+  .message.info {
+    background: #e3f2fd;
+    color: #1976d2;
+    display: block;
+  }
+
+  .welcome-card {
+    text-align: center;
+  }
+
+  .emoji {
+    font-size: 80px;
+    margin: 20px 0;
+  }
+
+  .user-info {
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+    text-align: left;
+  }
+
+  .user-info p {
+    margin: 8px 0;
+    color: #333;
+  }
+
+  .logout-btn {
+    background: #dc3545;
+    margin-top: 20px;
+  }
+
+  .logout-btn:hover {
+    background: #c82333;
+  }
+
+  .loader {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.6s linear infinite;
+    margin-right: 8px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
 </style>
 </head>
 <body>
 
-<div class="loader-bar" id="loaderBar"></div>
-<div class="bg"></div>
-<div class="blob blob1"></div>
-<div class="blob blob2"></div>
-<div class="blob blob3"></div>
-
-<div class="page active" id="authPage">
-  <div class="card">
-    <div class="logo"><span id="logoEmoji">🦄</span></div>
-    <h1 id="cardTitle">¡Bienvenido!</h1>
-    <p class="subtitle" id="cardSub">Inicia sesión para continuar tu aventura</p>
+<div class="container">
+  <!-- Pantalla de Login/Registro -->
+  <div id="authCard" class="card">
+    <h1>✨ Bienvenido</h1>
+    <p class="subtitle">Gestiona tus finanzas personales</p>
 
     <div class="tabs">
-      <button class="tab active" id="tabLogin" onclick="switchTab('login')">Entrar 🚀</button>
-      <button class="tab" id="tabReg" onclick="switchTab('register')">Registro ✨</button>
+      <button class="tab active" onclick="switchTab('login')">Iniciar Sesión</button>
+      <button class="tab" onclick="switchTab('register')">Registrarse</button>
     </div>
 
+    <!-- Formulario de Login -->
     <div id="loginForm">
-      <div class="field">
-        <label>CORREO ELECTRÓNICO</label>
-        <input type="email" id="lEmail" placeholder="tu@correo.com" autocomplete="email">
-        <span class="icon">📧</span>
+      <div class="form-group">
+        <label>📧 Correo Electrónico</label>
+        <input type="email" id="loginEmail" placeholder="tu@email.com">
       </div>
-      <div class="field">
-        <label>CONTRASEÑA</label>
-        <input type="password" id="lPass" placeholder="••••••••" autocomplete="current-password">
-        <span class="icon" onclick="togglePass('lPass',this)">👁️</span>
+      <div class="form-group">
+        <label>🔒 Contraseña</label>
+        <input type="password" id="loginPassword" placeholder="******">
       </div>
-      <button class="btn" id="loginBtn" onclick="doLogin()">Entrar 🎉</button>
+      <button class="btn" onclick="login()">Ingresar</button>
     </div>
 
+    <!-- Formulario de Registro -->
     <div id="registerForm" style="display:none">
-      <div class="two-col">
-        <div class="field">
-          <label>NOMBRE COMPLETO</label>
-          <input type="text" id="rName" placeholder="Tu nombre">
-          <span class="icon">😊</span>
-        </div>
-        <div class="field">
-          <label>TELÉFONO</label>
-          <input type="tel" id="rPhone" placeholder="+1 809 000 0000">
-          <span class="icon">📱</span>
-        </div>
+      <div class="form-group">
+        <label>👤 Nombre Completo</label>
+        <input type="text" id="regName" placeholder="Tu nombre">
       </div>
-      <div class="field">
-        <label>CORREO ELECTRÓNICO</label>
-        <input type="email" id="rEmail" placeholder="tu@correo.com" autocomplete="email">
-        <span class="icon">📧</span>
+      <div class="form-group">
+        <label>📱 Teléfono</label>
+        <input type="tel" id="regPhone" placeholder="+1 809 000 0000">
       </div>
-      <div class="field">
-        <label>CONTRASEÑA</label>
-        <input type="password" id="rPass" placeholder="Mínimo 6 caracteres" oninput="checkStrength(this)">
-        <span class="icon" onclick="togglePass('rPass',this)">👁️</span>
-        <div class="strength-wrap"><div class="strength-bar" id="sBar"></div></div>
+      <div class="form-group">
+        <label>📧 Correo Electrónico</label>
+        <input type="email" id="regEmail" placeholder="tu@email.com">
       </div>
-      <div class="field">
-        <label>CONFIRMAR CONTRASEÑA</label>
-        <input type="password" id="rPass2" placeholder="Repite tu contraseña">
-        <span class="icon" onclick="togglePass('rPass2',this)">👁️</span>
+      <div class="form-group">
+        <label>🔒 Contraseña</label>
+        <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres">
       </div>
-      <button class="btn" id="regBtn" onclick="doRegister()">Crear cuenta ✨</button>
+      <div class="form-group">
+        <label>🔒 Confirmar Contraseña</label>
+        <input type="password" id="regPassword2" placeholder="Repite la contraseña">
+      </div>
+      <button class="btn" onclick="register()">Crear Cuenta</button>
     </div>
 
-    <div class="msg" id="msgBox"></div>
+    <div id="message" class="message"></div>
+  </div>
+
+  <!-- Pantalla de Bienvenida -->
+  <div id="welcomeCard" class="card" style="display:none">
+    <div class="welcome-card">
+      <div class="emoji" id="welcomeEmoji">🎉</div>
+      <h2 id="welcomeName">¡Hola!</h2>
+      <p class="subtitle">Bienvenido a tu dashboard financiero</p>
+      
+      <div class="user-info">
+        <p><strong>📧 Correo:</strong> <span id="userEmail"></span></p>
+        <p><strong>📱 Teléfono:</strong> <span id="userPhone"></span></p>
+        <p><strong>📅 Registrado:</strong> <span id="userDate"></span></p>
+      </div>
+      
+      <button class="btn logout-btn" onclick="logout()">🚪 Cerrar Sesión</button>
+    </div>
   </div>
 </div>
 
-<div class="page" id="welcomePage">
-  <p class="greeting" id="greetUser">¡Hola!</p>
-  <div class="animal-display" id="animalDisplay">🦄</div>
-  <div class="welcome-word" id="welcomeWord"></div>
-  <p class="hint">¡Haz clic en las letras para transformarlas! 👆</p>
-  <button class="exit-btn" onclick="doLogout()">🚪 Salir</button>
-</div>
-
 <script>
-// ========== CONFIGURACIÓN SUPABASE ==========
+// Configuración de Supabase
 const SUPABASE_URL = 'https://jwrmekidkgeuaqfcqffq.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_aBsiZbHs0N2GAuaje5B-FQ_mWDGdULj';
 
@@ -233,126 +286,52 @@ const SUPABASE_ANON_KEY = 'sb_publishable_aBsiZbHs0N2GAuaje5B-FQ_mWDGdULj';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser = null;
-let animalTimer = null;
-let autoTransformTimer = null;
 
-const ANIMALS = [
-  {e:'🐶',n:'Perrito'},{e:'🐱',n:'Gatito'},{e:'🦊',n:'Zorro'},
-  {e:'🐼',n:'Panda'},{e:'🦁',n:'León'},{e:'🐸',n:'Rana'},
-  {e:'🦋',n:'Mariposa'},{e:'🐳',n:'Ballena'},{e:'🦄',n:'Unicornio'},
-  {e:'🐯',n:'Tigre'},{e:'🦚',n:'Pavo Real'},{e:'🐙',n:'Pulpo'},
-  {e:'🦜',n:'Loro'},{e:'🐬',n:'Delfín'},{e:'🦓',n:'Cebra'},
-  {e:'🦒',n:'Jirafa'},{e:'🐘',n:'Elefante'},{e:'🦩',n:'Flamenco'},
-];
-const WORD = 'BIENVENIDO';
-const LOGO_EMOJIS = ['🦄','🐶','🦊','🐱','🦁','🐼'];
-let logoIdx = 0;
-
-// Animación del logo
-setInterval(()=>{
-  const el=document.getElementById('logoEmoji');
-  el.style.transform='scale(0)';
-  setTimeout(()=>{el.textContent=LOGO_EMOJIS[logoIdx%LOGO_EMOJIS.length];el.style.transform='';logoIdx++;},300);
-  el.style.transition='transform 0.3s';
-},2000);
-
-// ========== FUNCIONES DE SUPABASE ==========
-
-// Crear tabla automáticamente (ejecutar una vez)
-async function initDatabase() {
-  try {
-    // Verificar si la tabla existe
-    const { error } = await supabase.from('usuarios').select('id', { count: 'exact', head: true });
-    
-    if (error && error.message.includes('does not exist')) {
-      console.log("La tabla no existe, por favor créala manualmente en Supabase SQL Editor:");
-      console.log(`
-        CREATE TABLE usuarios (
-          id SERIAL PRIMARY KEY,
-          nombre TEXT NOT NULL,
-          telefono TEXT NOT NULL,
-          correo TEXT UNIQUE NOT NULL,
-          contrasena TEXT NOT NULL,
-          created_at TIMESTAMP DEFAULT NOW()
-        );
-      `);
-      showMsg("⚠️ Configuración necesaria: Ejecuta el SQL en Supabase","info");
-    }
-  } catch (err) {
-    console.log("Error verificando tabla:", err);
-  }
+// Mostrar mensajes
+function showMessage(text, type) {
+  const msgDiv = document.getElementById('message');
+  msgDiv.textContent = text;
+  msgDiv.className = `message ${type}`;
+  setTimeout(() => {
+    msgDiv.className = 'message';
+  }, 4000);
 }
 
-// ========== LOADER ==========
-function showLoader(){
-  document.getElementById('loaderBar').classList.add('active');
-}
-function hideLoader(){
-  const b=document.getElementById('loaderBar');
-  b.classList.remove('active');
-  b.style.width='100%';b.style.transition='width 0.3s';
-  setTimeout(()=>{b.style.width='0';b.style.transition='none';},400);
-}
-
-// ========== PAGES ==========
-function showPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-// ========== TABS ==========
-function switchTab(t){
-  document.getElementById('loginForm').style.display=t==='login'?'block':'none';
-  document.getElementById('registerForm').style.display=t==='register'?'block':'none';
-  document.getElementById('tabLogin').className='tab'+(t==='login'?' active':'');
-  document.getElementById('tabReg').className='tab'+(t==='register'?' active':'');
-  document.getElementById('msgBox').className='msg';
-  document.getElementById('cardTitle').textContent=t==='login'?'¡Bienvenido!':'Crear cuenta';
-  document.getElementById('cardSub').textContent=t==='login'?'Inicia sesión para continuar tu aventura':'¡Únete, es gratis y divertido!';
-}
-
-// ========== TOGGLE PASSWORD ==========
-function togglePass(id,el){
-  const i=document.getElementById(id);
-  i.type=i.type==='password'?'text':'password';
-  el.textContent=i.type==='password'?'👁️':'🙈';
-  el.style.transform='scale(1.5)';setTimeout(()=>el.style.transform='',300);
-}
-
-// ========== STRENGTH ==========
-function checkStrength(inp){
-  const v=inp.value,b=document.getElementById('sBar');
-  let s=0;
-  if(v.length>=6)s++;if(v.length>=10)s++;
-  if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
-  const w=[0,20,40,70,100],c=['#f72585','#f72585','#ff9f1c','#4cc9f0','#06d6a0'];
-  b.style.width=w[Math.min(s,4)]+'%';b.style.background=c[Math.min(s,4)];
-}
-
-// ========== MSG ==========
-function showMsg(txt,type){
-  const m=document.getElementById('msgBox');
-  m.textContent=txt;m.className='msg '+type;
-  setTimeout(()=>{
-    if(m.className === 'msg '+type){
-      m.className='msg';
-    }
-  },5000);
-}
-
-// ========== LOGIN CON SUPABASE ==========
-async function doLogin(){
-  const email = document.getElementById('lEmail').value.trim();
-  const password = document.getElementById('lPass').value;
+// Cambiar entre pestañas
+function switchTab(tab) {
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  const tabs = document.querySelectorAll('.tab');
   
-  if(!email || !password){
-    showMsg('Completa todos los campos 😅','error');
+  if (tab === 'login') {
+    loginForm.style.display = 'block';
+    registerForm.style.display = 'none';
+    tabs[0].classList.add('active');
+    tabs[1].classList.remove('active');
+  } else {
+    loginForm.style.display = 'none';
+    registerForm.style.display = 'block';
+    tabs[0].classList.remove('active');
+    tabs[1].classList.add('active');
+  }
+  
+  document.getElementById('message').className = 'message';
+}
+
+// Función de Login
+async function login() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  
+  if (!email || !password) {
+    showMessage('❌ Por favor, completa todos los campos', 'error');
     return;
   }
   
-  const btn=document.getElementById('loginBtn');
-  btn.disabled=true;btn.textContent='Cargando... ⏳';
-  showLoader();
+  const btn = event.target;
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> Validando...';
   
   try {
     const { data, error } = await supabase
@@ -361,66 +340,66 @@ async function doLogin(){
       .eq('correo', email)
       .eq('contrasena', password);
     
-    hideLoader();
+    if (error) throw error;
     
-    if(error) throw error;
-    
-    if(!data || data.length === 0){
-      showMsg('Correo o contraseña incorrectos 😬','error');
+    if (!data || data.length === 0) {
+      showMessage('❌ Correo o contraseña incorrectos', 'error');
     } else {
       currentUser = data[0];
-      burst();
-      setTimeout(()=>{
-        showPage('welcomePage');
-        buildWelcome();
-      },700);
+      showWelcomeScreen();
+      showMessage('✅ ¡Bienvenido de vuelta!', 'success');
+      
+      // Limpiar campos
+      document.getElementById('loginEmail').value = '';
+      document.getElementById('loginPassword').value = '';
     }
-  } catch(err) {
-    hideLoader();
-    showMsg('Error: '+err.message,'error');
+  } catch (error) {
+    showMessage('❌ Error: ' + error.message, 'error');
   }
   
-  btn.disabled=false;btn.textContent='Entrar 🎉';
+  btn.disabled = false;
+  btn.textContent = originalText;
 }
 
-// ========== REGISTRO CON SUPABASE ==========
-async function doRegister(){
-  const name = document.getElementById('rName').value.trim();
-  const phone = document.getElementById('rPhone').value.trim();
-  const email = document.getElementById('rEmail').value.trim();
-  const pass = document.getElementById('rPass').value;
-  const pass2 = document.getElementById('rPass2').value;
+// Función de Registro
+async function register() {
+  const name = document.getElementById('regName').value.trim();
+  const phone = document.getElementById('regPhone').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const password2 = document.getElementById('regPassword2').value;
   
-  if(!name || !phone || !email || !pass || !pass2){
-    showMsg('Completa todos los campos ✍️','error');
+  if (!name || !phone || !email || !password || !password2) {
+    showMessage('❌ Por favor, completa todos los campos', 'error');
     return;
   }
   
-  if(pass !== pass2){
-    showMsg('Las contraseñas no coinciden 😬','error');
+  if (password !== password2) {
+    showMessage('❌ Las contraseñas no coinciden', 'error');
     return;
   }
   
-  if(pass.length < 6){
-    showMsg('Mínimo 6 caracteres en la contraseña 🔒','error');
+  if (password.length < 6) {
+    showMessage('❌ La contraseña debe tener al menos 6 caracteres', 'error');
     return;
   }
   
-  const btn=document.getElementById('regBtn');
-  btn.disabled=true;btn.textContent='Registrando... ⏳';
-  showLoader();
+  const btn = event.target;
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> Registrando...';
   
   try {
     // Verificar si el correo ya existe
-    const { data: existing, error: checkError } = await supabase
+    const { data: existing } = await supabase
       .from('usuarios')
       .select('correo')
       .eq('correo', email);
     
-    if(existing && existing.length > 0){
-      hideLoader();
-      showMsg('Ese correo ya está registrado 😅','error');
-      btn.disabled=false;btn.textContent='Crear cuenta ✨';
+    if (existing && existing.length > 0) {
+      showMessage('❌ Este correo ya está registrado', 'error');
+      btn.disabled = false;
+      btn.textContent = originalText;
       return;
     }
     
@@ -431,132 +410,111 @@ async function doRegister(){
         nombre: name,
         telefono: phone,
         correo: email,
-        contrasena: pass
+        contrasena: password,
+        created_at: new Date().toISOString()
       }])
       .select();
     
-    hideLoader();
+    if (error) throw error;
     
-    if(error) throw error;
+    showMessage('✅ ¡Cuenta creada exitosamente! Ahora inicia sesión', 'success');
     
-    burst();
-    showMsg('¡Cuenta creada! 🎊 Ahora inicia sesión','success');
-    setTimeout(()=>switchTab('login'),2200);
+    // Limpiar campos
+    document.getElementById('regName').value = '';
+    document.getElementById('regPhone').value = '';
+    document.getElementById('regEmail').value = '';
+    document.getElementById('regPassword').value = '';
+    document.getElementById('regPassword2').value = '';
     
-  } catch(err) {
-    hideLoader();
-    showMsg('Error: '+err.message,'error');
+    // Cambiar a login
+    setTimeout(() => switchTab('login'), 2000);
+    
+  } catch (error) {
+    showMessage('❌ Error: ' + error.message, 'error');
   }
   
-  btn.disabled=false;btn.textContent='Crear cuenta ✨';
+  btn.disabled = false;
+  btn.textContent = originalText;
 }
 
-// ========== WELCOME FUNCTIONS ==========
-function buildWelcome(){
-  document.getElementById('greetUser').textContent='¡Hola, '+(currentUser?.nombre||'amigo')+'! 👋';
-  buildWordLetters();
+// Mostrar pantalla de bienvenida
+function showWelcomeScreen() {
+  document.getElementById('authCard').style.display = 'none';
+  document.getElementById('welcomeCard').style.display = 'block';
   
-  if(animalTimer) clearInterval(animalTimer);
-  if(autoTransformTimer) clearInterval(autoTransformTimer);
+  document.getElementById('welcomeName').textContent = `¡Hola ${currentUser.nombre}!`;
+  document.getElementById('userEmail').textContent = currentUser.correo;
+  document.getElementById('userPhone').textContent = currentUser.telefono || 'No especificado';
   
-  let animalIdx=0;
-  const cycleAnimal = () => {
-    const el=document.getElementById('animalDisplay');
-    const a=ANIMALS[animalIdx%ANIMALS.length];
-    el.style.opacity='0';el.style.transform='scale(0.5) rotate(-15deg)';
-    el.style.transition='all 0.3s';
-    setTimeout(()=>{
-      el.textContent=a.e+' '+a.n+' '+a.e;
-      el.style.opacity='1';el.style.transform='scale(1)';
-      el.style.animation='animalPop 0.5s cubic-bezier(.34,1.56,.64,1)';
-    },300);
-    animalIdx++;
-  };
+  // Formatear fecha
+  const date = currentUser.created_at ? new Date(currentUser.created_at) : new Date();
+  document.getElementById('userDate').textContent = date.toLocaleDateString('es-ES');
   
-  cycleAnimal();
-  animalTimer=setInterval(cycleAnimal,2500);
-  autoTransformTimer=setInterval(autoTransform,900);
+  // Emoji aleatorio de bienvenida
+  const emojis = ['🎉', '🎊', '✨', '🌟', '💫', '⭐', '🦄', '🌈'];
+  document.getElementById('welcomeEmoji').textContent = emojis[Math.floor(Math.random() * emojis.length)];
 }
 
-function buildWordLetters(){
-  const container=document.getElementById('welcomeWord');
-  container.innerHTML='';
-  WORD.split('').forEach((ch,i)=>{
-    const span=document.createElement('span');
-    span.className='wletter';
-    span.textContent=ch;
-    span.style.animationDelay=(i*0.1)+'s';
-    span.style.animationDuration=(2.5+Math.random())+'s';
-    span.dataset.original=ch;
-    span.addEventListener('click',()=>transformLetter(span));
-    container.appendChild(span);
-  });
+// Cerrar sesión
+function logout() {
+  currentUser = null;
+  document.getElementById('authCard').style.display = 'block';
+  document.getElementById('welcomeCard').style.display = 'none';
+  switchTab('login');
+  showMessage('👋 Has cerrado sesión', 'info');
 }
 
-function transformLetter(span){
-  const a=ANIMALS[Math.floor(Math.random()*ANIMALS.length)];
-  span.style.transform='scale(0) rotate(20deg)';
-  span.style.transition='all 0.2s';
-  setTimeout(()=>{
-    span.textContent=a.e;
-    span.style.transform='scale(1.5)';
-    setTimeout(()=>{
-      span.style.transform='';
-      setTimeout(()=>{
-        span.textContent=span.dataset.original;
-      },2000);
-    },300);
-  },200);
-}
-
-function autoTransform(){
-  const spans=document.getElementById('welcomeWord').querySelectorAll('.wletter');
-  if(spans.length>0){
-    const idx=Math.floor(Math.random()*spans.length);
-    transformLetter(spans[idx]);
+// Verificar si hay sesión guardada al cargar
+window.onload = () => {
+  // Intentar recuperar sesión si existe
+  const savedUser = sessionStorage.getItem('currentUser');
+  if (savedUser) {
+    try {
+      currentUser = JSON.parse(savedUser);
+      showWelcomeScreen();
+    } catch(e) {
+      console.log('Error al recuperar sesión');
+    }
   }
-}
+  
+  // Mostrar instrucciones para crear la tabla
+  checkAndNotifyTable();
+};
 
-// ========== LOGOUT ==========
-function doLogout(){
-  if(animalTimer) clearInterval(animalTimer);
-  if(autoTransformTimer) clearInterval(autoTransformTimer);
-  currentUser=null;
-  burst();
-  setTimeout(()=>{
-    showPage('authPage');
-    switchTab('login');
-    document.getElementById('lEmail').value='';
-    document.getElementById('lPass').value='';
-  },400);
-}
-
-// ========== PARTICLES ==========
-function burst(){
-  const colors=['#f72585','#7209b7','#4cc9f0','#06d6a0','#ff9f1c','#fff'];
-  for(let i=0;i<40;i++){
-    setTimeout(()=>{
-      const d=document.createElement('div');
-      d.className='p-dot';
-      d.style.left=(20+Math.random()*60)+'vw';
-      d.style.top=(20+Math.random()*60)+'vh';
-      d.style.background=colors[Math.floor(Math.random()*colors.length)];
-      d.style.setProperty('--tx',(Math.random()-0.5)*300+'px');
-      d.style.setProperty('--ty',(Math.random()-0.5)*300+'px');
-      d.style.setProperty('--dur',(0.7+Math.random()*0.8)+'s');
-      document.body.appendChild(d);
-      setTimeout(()=>d.remove(),1600);
-    },i*25);
+// Verificar y notificar sobre la tabla
+async function checkAndNotifyTable() {
+  try {
+    const { error } = await supabase.from('usuarios').select('id', { count: 'exact', head: true });
+    if (error && error.message.includes('does not exist')) {
+      showMessage('ℹ️ Configuración necesaria: Ejecuta el SQL en Supabase para crear la tabla "usuarios"', 'info');
+      console.log(`
+      SQL para crear la tabla:
+      
+      CREATE TABLE usuarios (
+        id SERIAL PRIMARY KEY,
+        nombre TEXT NOT NULL,
+        telefono TEXT NOT NULL,
+        correo TEXT UNIQUE NOT NULL,
+        contrasena TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+      
+      ALTER TABLE usuarios DISABLE ROW LEVEL SECURITY;
+      `);
+    }
+  } catch(e) {
+    console.log('Error verificando tabla');
   }
 }
 
-// ========== INICIAR APP ==========
-// Mostrar animación inicial
-burst();
-initDatabase();
-
-// Verificar sesión guardada (opcional)
-// No guardamos sesión por simplicidad, siempre empieza en login
+// Guardar sesión al hacer login
+const originalLogin = login;
+window.login = async function() {
+  await originalLogin();
+  if (currentUser) {
+    sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+  }
+};
 
 </script>
 </body>
