@@ -129,6 +129,7 @@
   .btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    transform: none;
   }
 
   .message {
@@ -203,6 +204,10 @@
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
+
+  button {
+    font-family: inherit;
+  }
 </style>
 </head>
 <body>
@@ -214,8 +219,8 @@
     <p class="subtitle">Gestiona tus finanzas personales</p>
 
     <div class="tabs">
-      <button class="tab active" onclick="switchTab('login')">Iniciar Sesión</button>
-      <button class="tab" onclick="switchTab('register')">Registrarse</button>
+      <button class="tab active" id="tabLoginBtn">Iniciar Sesión</button>
+      <button class="tab" id="tabRegisterBtn">Registrarse</button>
     </div>
 
     <!-- Formulario de Login -->
@@ -228,7 +233,7 @@
         <label>🔒 Contraseña</label>
         <input type="password" id="loginPassword" placeholder="******">
       </div>
-      <button class="btn" onclick="login()">Ingresar</button>
+      <button class="btn" id="loginBtn">Ingresar</button>
     </div>
 
     <!-- Formulario de Registro -->
@@ -253,7 +258,7 @@
         <label>🔒 Confirmar Contraseña</label>
         <input type="password" id="regPassword2" placeholder="Repite la contraseña">
       </div>
-      <button class="btn" onclick="register()">Crear Cuenta</button>
+      <button class="btn" id="registerBtn">Crear Cuenta</button>
     </div>
 
     <div id="message" class="message"></div>
@@ -272,7 +277,7 @@
         <p><strong>📅 Registrado:</strong> <span id="userDate"></span></p>
       </div>
       
-      <button class="btn logout-btn" onclick="logout()">🚪 Cerrar Sesión</button>
+      <button class="btn logout-btn" id="logoutBtn">🚪 Cerrar Sesión</button>
     </div>
   </div>
 </div>
@@ -293,29 +298,34 @@ function showMessage(text, type) {
   msgDiv.textContent = text;
   msgDiv.className = `message ${type}`;
   setTimeout(() => {
+    msgDiv.style.display = 'none';
     msgDiv.className = 'message';
   }, 4000);
+  msgDiv.style.display = 'block';
 }
 
 // Cambiar entre pestañas
 function switchTab(tab) {
   const loginForm = document.getElementById('loginForm');
   const registerForm = document.getElementById('registerForm');
-  const tabs = document.querySelectorAll('.tab');
+  const tabLogin = document.getElementById('tabLoginBtn');
+  const tabRegister = document.getElementById('tabRegisterBtn');
   
   if (tab === 'login') {
     loginForm.style.display = 'block';
     registerForm.style.display = 'none';
-    tabs[0].classList.add('active');
-    tabs[1].classList.remove('active');
+    tabLogin.classList.add('active');
+    tabRegister.classList.remove('active');
   } else {
     loginForm.style.display = 'none';
     registerForm.style.display = 'block';
-    tabs[0].classList.remove('active');
-    tabs[1].classList.add('active');
+    tabLogin.classList.remove('active');
+    tabRegister.classList.add('active');
   }
   
-  document.getElementById('message').className = 'message';
+  const msgDiv = document.getElementById('message');
+  msgDiv.style.display = 'none';
+  msgDiv.className = 'message';
 }
 
 // Función de Login
@@ -328,7 +338,7 @@ async function login() {
     return;
   }
   
-  const btn = event.target;
+  const btn = document.getElementById('loginBtn');
   const originalText = btn.textContent;
   btn.disabled = true;
   btn.innerHTML = '<span class="loader"></span> Validando...';
@@ -346,6 +356,7 @@ async function login() {
       showMessage('❌ Correo o contraseña incorrectos', 'error');
     } else {
       currentUser = data[0];
+      sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
       showWelcomeScreen();
       showMessage('✅ ¡Bienvenido de vuelta!', 'success');
       
@@ -358,7 +369,7 @@ async function login() {
   }
   
   btn.disabled = false;
-  btn.textContent = originalText;
+  btn.innerHTML = originalText;
 }
 
 // Función de Registro
@@ -384,7 +395,7 @@ async function register() {
     return;
   }
   
-  const btn = event.target;
+  const btn = document.getElementById('registerBtn');
   const originalText = btn.textContent;
   btn.disabled = true;
   btn.innerHTML = '<span class="loader"></span> Registrando...';
@@ -399,7 +410,7 @@ async function register() {
     if (existing && existing.length > 0) {
       showMessage('❌ Este correo ya está registrado', 'error');
       btn.disabled = false;
-      btn.textContent = originalText;
+      btn.innerHTML = originalText;
       return;
     }
     
@@ -434,7 +445,7 @@ async function register() {
   }
   
   btn.disabled = false;
-  btn.textContent = originalText;
+  btn.innerHTML = originalText;
 }
 
 // Mostrar pantalla de bienvenida
@@ -458,15 +469,38 @@ function showWelcomeScreen() {
 // Cerrar sesión
 function logout() {
   currentUser = null;
+  sessionStorage.removeItem('currentUser');
   document.getElementById('authCard').style.display = 'block';
   document.getElementById('welcomeCard').style.display = 'none';
   switchTab('login');
   showMessage('👋 Has cerrado sesión', 'info');
 }
 
-// Verificar si hay sesión guardada al cargar
-window.onload = () => {
-  // Intentar recuperar sesión si existe
+// Verificar y notificar sobre la tabla
+async function checkAndNotifyTable() {
+  try {
+    const { error } = await supabase.from('usuarios').select('id', { count: 'exact', head: true });
+    if (error && error.message.includes('does not exist')) {
+      console.log('La tabla "usuarios" no existe. Ejecuta el SQL en Supabase');
+      showMessage('ℹ️ Configuración necesaria: Ejecuta el SQL en Supabase para crear la tabla "usuarios"', 'info');
+    }
+  } catch(e) {
+    console.log('Error verificando tabla');
+  }
+}
+
+// Asignar eventos cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', () => {
+  // Botones de tabs
+  document.getElementById('tabLoginBtn').addEventListener('click', () => switchTab('login'));
+  document.getElementById('tabRegisterBtn').addEventListener('click', () => switchTab('register'));
+  
+  // Botones de acciones
+  document.getElementById('loginBtn').addEventListener('click', login);
+  document.getElementById('registerBtn').addEventListener('click', register);
+  document.getElementById('logoutBtn').addEventListener('click', logout);
+  
+  // Verificar sesión guardada
   const savedUser = sessionStorage.getItem('currentUser');
   if (savedUser) {
     try {
@@ -477,45 +511,9 @@ window.onload = () => {
     }
   }
   
-  // Mostrar instrucciones para crear la tabla
+  // Verificar tabla
   checkAndNotifyTable();
-};
-
-// Verificar y notificar sobre la tabla
-async function checkAndNotifyTable() {
-  try {
-    const { error } = await supabase.from('usuarios').select('id', { count: 'exact', head: true });
-    if (error && error.message.includes('does not exist')) {
-      showMessage('ℹ️ Configuración necesaria: Ejecuta el SQL en Supabase para crear la tabla "usuarios"', 'info');
-      console.log(`
-      SQL para crear la tabla:
-      
-      CREATE TABLE usuarios (
-        id SERIAL PRIMARY KEY,
-        nombre TEXT NOT NULL,
-        telefono TEXT NOT NULL,
-        correo TEXT UNIQUE NOT NULL,
-        contrasena TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT NOW()
-      );
-      
-      ALTER TABLE usuarios DISABLE ROW LEVEL SECURITY;
-      `);
-    }
-  } catch(e) {
-    console.log('Error verificando tabla');
-  }
-}
-
-// Guardar sesión al hacer login
-const originalLogin = login;
-window.login = async function() {
-  await originalLogin();
-  if (currentUser) {
-    sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
-  }
-};
-
+});
 </script>
 </body>
 </html>
